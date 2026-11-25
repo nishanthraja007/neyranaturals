@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Neyra Naturals · Admin</title>
+<style>
+:root{--bg:#fdf8e8;--card:#fff;--text:#1a1a1a;--muted:#6b6b6b;--line:#e8dfc4;--accent:#1a1a1a;--pink:#fbcfe8;--ok:#15803d;--bad:#b91c1c}
+@media(prefers-color-scheme:dark){:root{--bg:#14110a;--card:#1f1b12;--text:#f5efdc;--muted:#a79f86;--line:#3a3322;--accent:#fbcfe8}}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);padding:1rem}
+.wrap{max-width:820px;margin:0 auto}h1{font-size:1.4rem;margin:.5rem 0 1rem}h2{font-size:1.05rem;margin:0 0 .8rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.1rem;margin-bottom:1rem}
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.25rem}
+input[type=text],input[type=number],input[type=password]{width:100%;padding:.6rem .7rem;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--text);font-size:.95rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;align-items:end}
+.prod{border-top:1px dashed var(--line);padding-top:.9rem;margin-top:.9rem}.prod:first-of-type{border:0;margin:0;padding:0}
+.chk{display:flex;align-items:center;gap:.4rem;font-size:.9rem;color:var(--text);margin:0}
+button{font:inherit;cursor:pointer;border-radius:100px;padding:.65rem 1.2rem;border:1px solid var(--line);background:transparent;color:var(--text)}
+button.primary{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:600}
+.row{display:flex;gap:.6rem;flex-wrap:wrap}.note{font-size:.82rem;color:var(--muted);line-height:1.5}
+.tag{font-size:.75rem;padding:.15rem .6rem;border-radius:100px;background:var(--pink);color:#011d17;margin-left:.4rem}
+#toast{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:.6rem 1.1rem;border-radius:100px;opacity:0;transition:.3s;pointer-events:none}
+#toast.show{opacity:1}.steps li{margin:.3rem 0}
+</style></head><body><div class="wrap">
+
+<div id="login" class="card" style="max-width:380px;margin:12vh auto 0">
+  <h2 id="loginTitle">Admin login</h2>
+  <label id="loginLabel">Password</label>
+  <input type="password" id="pw" autocomplete="current-password">
+  <div class="row" style="margin-top:.8rem"><button class="primary" id="loginBtn">Continue</button></div>
+  <p class="note" id="loginNote"></p>
+</div>
+
+<div id="app" hidden>
+  <h1>Neyra Naturals — Admin <span class="tag">dashboard</span></h1>
+
+  <div class="card">
+    <h2>🎉 Offer banner</h2>
+    <label class="chk"><input type="checkbox" id="offEnabled"> Show offer banner on website</label>
+    <div style="margin-top:.7rem"><label>Offer text (e.g. "Diwali offer: 10% off on all sizes!")</label>
+    <input type="text" id="offText" maxlength="120"></div>
+  </div>
+
+  <div class="card"><h2>💰 Products &amp; prices</h2><div id="products"></div>
+    <p class="note" style="margin-top:.8rem">Leave "Offer price" empty for no discount. When filled, the original price shows struck-through with the offer price beside it.</p>
+  </div>
+
+  <div class="card"><h2>📞 Contact</h2>
+    <div class="grid"><div><label>Phone (for call link)</label><input type="text" id="phone"></div>
+    <div><label>Phone (as displayed)</label><input type="text" id="phoneDisp"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Save &amp; publish</h2>
+    <div class="row">
+      <button id="previewBtn">👁 Preview on site</button>
+      <button class="primary" id="dlBtn">⬇ Download prices.json</button>
+      <button id="resetBtn">Reset to saved</button>
+      <button id="pwBtn">Change password</button>
+      <button id="logoutBtn">Log out</button>
+    </div>
+    <ol class="steps note">
+      <li>Change prices / offer above.</li>
+      <li>Click <b>Preview on site</b> to check how it looks (works in this browser only).</li>
+      <li>Click <b>Download prices.json</b>, then upload it to your hosting, <b>replacing</b> the old prices.json (same folder as index.html).</li>
+      <li>Refresh the website — new prices are live for everyone.</li>
+    </ol>
+  </div>
+</div>
+<div id="toast"></div>
+</div>
+<script>
+const KEY='neyra-draft',PW='neyra-admin-pw';
+const $=id=>document.getElementById(id);
+let CFG=null;
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
+async function sha(x){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(x));return [...new Uint8Array(b)].map(v=>v.toString(16).padStart(2,'0')).join('')}
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+
+// ---- login (first visit: create password) ----
+let hasPw=!!ls.get(PW);
+if(!hasPw){$('loginTitle').textContent='Create admin password';$('loginLabel').textContent='Choose a password (min 6 characters)';$('loginNote').textContent='First time setup. This password is stored in this browser only.'}
+$('loginBtn').onclick=async()=>{
+  const v=$('pw').value;
+  if(!hasPw){if(v.length<6)return toast('Use at least 6 characters');ls.set(PW,await sha(v));hasPw=true;enter();}
+  else if(await sha(v)===ls.get(PW))enter();else toast('Wrong password');
+};
+$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginBtn').click()});
+$('logoutBtn').onclick=()=>location.reload();
+$('pwBtn').onclick=async()=>{const n=prompt('New password (min 6 characters):');if(n&&n.length>=6){ls.set(PW,await sha(n));toast('Password changed')}else if(n)toast('Too short')};
+
+async function enter(){
+  $('login').hidden=true;$('app').hidden=false;
+  let base=null;
+  try{const r=await fetch('prices.json?v='+Date.now(),{cache:'no-store'});if(r.ok)base=await r.json()}catch(e){}
+  const draft=ls.get(KEY);
+  CFG=draft?JSON.parse(draft):base;
+  if(!CFG)CFG={version:1,phone:"+919626243308",phoneDisplay:"+91 96262 43308",offer:{enabled:false,text:""},products:[
+    {size:"100 ml",price:275,offerPrice:null,shipping:"+ Shipping Extra",inStock:true,visible:true},
+    {size:"200 ml",price:550,offerPrice:null,shipping:"+ Shipping Free",inStock:true,visible:true},
+    {size:"500 ml",price:1375,offerPrice:null,shipping:"+ Shipping Free",inStock:true,visible:true}]};
+  window.__base=base;render();
+}
+function render(){
+  $('offEnabled').checked=!!CFG.offer.enabled;$('offText').value=CFG.offer.text||'';
+  $('phone').value=CFG.phone;$('phoneDisp').value=CFG.phoneDisplay;
+  $('products').innerHTML=CFG.products.map((p,i)=>`<div class="prod"><b>${p.size}</b>
+   <div class="grid" style="margin-top:.5rem">
+    <div><label>Price (Rs.)</label><input type="number" min="0" data-i="${i}" data-k="price" value="${p.price}"></div>
+    <div><label>Offer price (Rs.)</label><input type="number" min="0" data-i="${i}" data-k="offerPrice" value="${p.offerPrice??''}" placeholder="none"></div>
+    <div><label>Shipping text</label><input type="text" data-i="${i}" data-k="shipping" value="${p.shipping}"></div>
+   </div>
+   <div class="row" style="margin-top:.6rem"><label class="chk"><input type="checkbox" data-i="${i}" data-k="inStock" ${p.inStock!==false?'checked':''}> In stock</label>
+   <label class="chk"><input type="checkbox" data-i="${i}" data-k="visible" ${p.visible!==false?'checked':''}> Show in tariff</label></div></div>`).join('');
+}
+function collect(){
+  CFG.offer={enabled:$('offEnabled').checked,text:$('offText').value.trim()};
+  CFG.phone=$('phone').value.trim();CFG.phoneDisplay=$('phoneDisp').value.trim();
+  document.querySelectorAll('#products [data-k]').forEach(el=>{
+    const p=CFG.products[+el.dataset.i],k=el.dataset.k;
+    if(el.type==='checkbox')p[k]=el.checked;
+    else if(k==='price')p[k]=Math.max(0,Number(el.value)||0);
+    else if(k==='offerPrice')p[k]=el.value===''?null:Math.max(0,Number(el.value));
+    else p[k]=el.value;
+  });
+  CFG.updated=new Date().toISOString();
+  ls.set(KEY,JSON.stringify(CFG));
+  return CFG;
+}
+function validate(){for(const p of CFG.products)if(p.offerPrice!=null&&p.offerPrice>=p.price){toast(`${p.size}: offer price must be less than price`);return false}return true}
+$('previewBtn').onclick=()=>{collect();if(validate())window.open('index.html?preview=1','_blank')};
+$('dlBtn').onclick=()=>{collect();if(!validate())return;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(CFG,null,2)],{type:'application/json'}));
+  a.download='prices.json';a.click();toast('Downloaded — now upload it to your hosting')};
+$('resetBtn').onclick=()=>{if(!confirm('Discard unsaved edits and go back to the live prices.json?'))return;try{localStorage.removeItem(KEY)}catch(e){}enter()};
+</script></body></html>

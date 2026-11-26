@@ -2,10 +2,35 @@
   "version": 1,
   "phone": "+919626243308",
   "phoneDisplay": "+91 96262 43308",
-  "offer": { "enabled": false, "text": "" },
+  "offer": {
+    "enabled": false,
+    "text": ""
+  },
   "products": [
-    { "size": "100 ml", "price": 275, "offerPrice": null, "shipping": "+ Shipping Extra", "inStock": true, "visible": true },
-    { "size": "200 ml", "price": 550, "offerPrice": null, "shipping": "+ Shipping Free", "inStock": true, "visible": true },
-    { "size": "500 ml", "price": 1375, "offerPrice": null, "shipping": "+ Shipping Free", "inStock": true, "visible": true }
-  ]
+    {
+      "size": "100 ml",
+      "price": 276,
+      "offerPrice": null,
+      "shipping": "+ Shipping Extra",
+      "inStock": true,
+      "visible": true
+    },
+    {
+      "size": "200 ml",
+      "price": 550,
+      "offerPrice": null,
+      "shipping": "+ Shipping Free",
+      "inStock": true,
+      "visible": true
+    },
+    {
+      "size": "500 ml",
+      "price": 1375,
+      "offerPrice": null,
+      "shipping": "+ Shipping Free",
+      "inStock": true,
+      "visible": true
+    }
+  ],
+  "updated": "2026-11-26T05:32:17.253Z"
 }

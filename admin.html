@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Neyra Naturals · Admin</title>
+<title>Neyra Naturals · Admin Dashboard</title>
 <style>
 :root{--bg:#fdf8e8;--card:#fff;--text:#1a1a1a;--muted:#6b6b6b;--line:#e8dfc4;--accent:#1a1a1a;--pink:#fbcfe8;--ok:#15803d;--bad:#b91c1c}
 @media(prefers-color-scheme:dark){:root{--bg:#14110a;--card:#1f1b12;--text:#f5efdc;--muted:#a79f86;--line:#3a3322;--accent:#fbcfe8}}
@@ -14,12 +14,16 @@ input[type=text],input[type=number],input[type=password]{width:100%;padding:.6re
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;align-items:end}
 .prod{border-top:1px dashed var(--line);padding-top:.9rem;margin-top:.9rem}.prod:first-of-type{border:0;margin:0;padding:0}
 .chk{display:flex;align-items:center;gap:.4rem;font-size:.9rem;color:var(--text);margin:0}
-button{font:inherit;cursor:pointer;border-radius:100px;padding:.65rem 1.2rem;border:1px solid var(--line);background:transparent;color:var(--text)}
+button{font:inherit;cursor:pointer;border-radius:100px;padding:.65rem 1.2rem;border:1px solid var(--line);background:transparent;color:var(--text);transition:all .2s ease}
+button:hover{opacity:.85}
 button.primary{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:600}
-.row{display:flex;gap:.6rem;flex-wrap:wrap}.note{font-size:.82rem;color:var(--muted);line-height:1.5}
+button.success{background:#15803d;color:#fff;border-color:#15803d;font-weight:700}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}.note{font-size:.82rem;color:var(--muted);line-height:1.5}
 .tag{font-size:.75rem;padding:.15rem .6rem;border-radius:100px;background:var(--pink);color:#011d17;margin-left:.4rem}
-#toast{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:.6rem 1.1rem;border-radius:100px;opacity:0;transition:.3s;pointer-events:none}
-#toast.show{opacity:1}.steps li{margin:.3rem 0}
+#toast{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:.6rem 1.1rem;border-radius:100px;opacity:0;transition:.3s;pointer-events:none;z-index:999}
+#toast.show{opacity:1}
+.pub-box{border:2px solid #86efac;background:#f0fdf4;border-radius:16px;padding:1.2rem;margin-bottom:1rem}
+@media(prefers-color-scheme:dark){.pub-box{background:#052e16;border-color:#166534}}
 </style></head><body><div class="wrap">
 
 <div id="login" class="card" style="max-width:380px;margin:12vh auto 0">
@@ -31,12 +35,44 @@ button.primary{background:var(--text);color:var(--bg);border-color:var(--text);f
 </div>
 
 <div id="app" hidden>
-  <h1>Neyra Naturals — Admin <span class="tag">dashboard</span></h1>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+    <h1>Neyra Naturals — Admin <span class="tag">dashboard</span></h1>
+    <a href="/" target="_blank" style="font-size:.85rem;color:var(--muted);text-decoration:none">↗ View Live Site</a>
+  </div>
+
+  <div class="pub-box">
+    <h2 style="color:#15803d;display:flex;align-items:center;gap:.5rem;margin-top:0">
+      <span>🚀 Save Changes Live Everywhere (Vercel)</span>
+    </h2>
+    <p class="note" style="margin-bottom:.9rem">
+      When you click <b>Save Changes &amp; Publish Live</b>, your changes are automatically saved and deployed live on Vercel across all devices and customers.
+    </p>
+
+    <div style="margin-bottom:1rem">
+      <label style="font-weight:600">GitHub Personal Access Token (One-time setup)</label>
+      <div style="display:flex;gap:.5rem">
+        <input type="password" id="ghToken" placeholder="Paste your GitHub token here (e.g. ghp_...)" style="background:var(--card)">
+        <button id="saveTokenBtn" type="button" style="white-space:nowrap;background:#15803d;color:#fff;border-color:#15803d">Save Token</button>
+      </div>
+      <div style="margin-top:.4rem;font-size:.8rem;line-height:1.4">
+        👉 Don't have a token? <a href="https://github.com/settings/tokens/new?scopes=repo&description=Neyra+Naturals+Admin" target="_blank" rel="noopener" style="color:#15803d;font-weight:600;text-decoration:underline">Click here to generate one</a> (login to GitHub &rarr; scroll to bottom &rarr; click <b>Generate token</b> &rarr; copy &amp; paste it here).
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="success" id="publishBtn" style="padding:.75rem 1.6rem;font-size:.95rem">
+        💾 Save Changes &amp; Publish Live
+      </button>
+      <button id="previewBtn">👁 Preview Changes</button>
+      <button id="dlBtn" style="font-size:.85rem">⬇ Download Backup (prices.json)</button>
+    </div>
+    <div id="publishStatus" style="margin-top:1rem;font-size:.9rem;display:none;padding:.7rem;border-radius:10px"></div>
+  </div>
 
   <div class="card">
     <h2>🎉 Offer banner</h2>
     <label class="chk"><input type="checkbox" id="offEnabled"> Show offer banner on website</label>
-    <div style="margin-top:.7rem"><label>Offer text (e.g. "Diwali offer: 10% off on all sizes!")</label>
+    <div style="margin-top:.7rem"><label>Offer text (e.g. "Special offer: Free delivery on all orders!")</label>
     <input type="text" id="offText" maxlength="120"></div>
   </div>
 
@@ -50,26 +86,19 @@ button.primary{background:var(--text);color:var(--bg);border-color:var(--text);f
   </div>
 
   <div class="card">
-    <h2>Save &amp; publish</h2>
+    <h2>Settings &amp; Account</h2>
     <div class="row">
-      <button id="previewBtn">👁 Preview on site</button>
-      <button class="primary" id="dlBtn">⬇ Download prices.json</button>
-      <button id="resetBtn">Reset to saved</button>
-      <button id="pwBtn">Change password</button>
+      <button id="resetBtn">Reset to current live prices</button>
+      <button id="pwBtn">Change admin password</button>
       <button id="logoutBtn">Log out</button>
     </div>
-    <ol class="steps note">
-      <li>Change prices / offer above.</li>
-      <li>Click <b>Preview on site</b> to check how it looks (works in this browser only).</li>
-      <li>Click <b>Download prices.json</b>, then upload it to your hosting, <b>replacing</b> the old prices.json (same folder as index.html).</li>
-      <li>Refresh the website — new prices are live for everyone.</li>
-    </ol>
   </div>
 </div>
 <div id="toast"></div>
 </div>
 <script>
-const KEY='neyra-draft',PW='neyra-admin-pw';
+const KEY='neyra-draft',PW='neyra-admin-pw',GH_TOKEN_KEY='neyra-gh-token';
+const GH_REPO='nishanthraja007/neyranaturals',GH_BRANCH='main',GH_FILE='prices.json';
 const $=id=>document.getElementById(id);
 let CFG=null;
 const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
@@ -90,6 +119,7 @@ $('pwBtn').onclick=async()=>{const n=prompt('New password (min 6 characters):');
 
 async function enter(){
   $('login').hidden=true;$('app').hidden=false;
+  $('ghToken').value=ls.get(GH_TOKEN_KEY)||'';
   let base=null;
   try{const r=await fetch('prices.json?v='+Date.now(),{cache:'no-store'});if(r.ok)base=await r.json()}catch(e){}
   const draft=ls.get(KEY);
@@ -127,9 +157,78 @@ function collect(){
   return CFG;
 }
 function validate(){for(const p of CFG.products)if(p.offerPrice!=null&&p.offerPrice>=p.price){toast(`${p.size}: offer price must be less than price`);return false}return true}
-$('previewBtn').onclick=()=>{collect();if(validate())window.open('index.html?preview=1','_blank')};
+
+$('saveTokenBtn').onclick=()=>{
+  const t=$('ghToken').value.trim();
+  if(!t)return toast('Please paste a token first');
+  ls.set(GH_TOKEN_KEY,t);
+  toast('✅ GitHub Token saved');
+};
+
+$('publishBtn').onclick=async()=>{
+  collect();
+  if(!validate())return;
+  const token=$('ghToken').value.trim()||ls.get(GH_TOKEN_KEY);
+  if(!token){
+    $('ghToken').focus();
+    toast('⚠️ Enter your GitHub Token first');
+    return;
+  }
+  ls.set(GH_TOKEN_KEY,token);
+  const status=$('publishStatus');
+  const btn=$('publishBtn');
+  btn.disabled=true;
+  btn.textContent='⏳ Publishing live to Vercel...';
+  status.style.display='block';
+  status.style.background='#e0f2fe';
+  status.style.color='#0369a1';
+  status.innerHTML='Connecting to GitHub &amp; fetching repository status...';
+
+  try{
+    const getRes=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`,{
+      headers:{'Authorization':`Bearer ${token}`,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(!getRes.ok){
+      const err=await getRes.json().catch(()=>({}));
+      throw new Error(err.message||`Failed to access repo (${getRes.status}). Check token permissions.`);
+    }
+    const fileData=await getRes.json();
+    const sha=fileData.sha;
+
+    const contentBase64=btoa(unescape(encodeURIComponent(JSON.stringify(CFG,null,2))));
+    const putRes=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,{
+      method:'PUT',
+      headers:{'Authorization':`Bearer ${token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify({
+        message:'Update prices and settings via Admin Dashboard',
+        content:contentBase64,
+        sha:sha,
+        branch:GH_BRANCH
+      })
+    });
+    if(!putRes.ok){
+      const err=await putRes.json().catch(()=>({}));
+      throw new Error(err.message||`Failed to commit changes (${putRes.status}).`);
+    }
+
+    status.style.background='#dcfce7';
+    status.style.color='#15803d';
+    status.innerHTML='🎉 <b>Published successfully!</b> Vercel is now deploying your changes live across all devices (~20-30 seconds).';
+    toast('✅ Changes published live to Vercel!');
+  }catch(e){
+    status.style.background='#fee2e2';
+    status.style.color='#b91c1c';
+    status.innerHTML=`❌ <b>Error:</b> ${e.message}<br><small>Make sure your GitHub token has the <b>repo</b> scope.</small>`;
+    toast('Failed to save to GitHub');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='💾 Save Changes & Publish Live';
+  }
+};
+
+$('previewBtn').onclick=()=>{collect();if(validate())window.open('/?preview=1','_blank')};
 $('dlBtn').onclick=()=>{collect();if(!validate())return;
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(CFG,null,2)],{type:'application/json'}));
-  a.download='prices.json';a.click();toast('Downloaded — now upload it to your hosting')};
-$('resetBtn').onclick=()=>{if(!confirm('Discard unsaved edits and go back to the live prices.json?'))return;try{localStorage.removeItem(KEY)}catch(e){}enter()};
+  a.download='prices.json';a.click();toast('Downloaded backup prices.json')};
+$('resetBtn').onclick=()=>{if(!confirm('Discard unsaved edits and reset to the live prices.json?'))return;try{localStorage.removeItem(KEY)}catch(e){}enter()};
 </script></body></html>

@@ -9,7 +9,7 @@
   "products": [
     {
       "size": "100 ml",
-      "price": 275,
+      "price": 278,
       "offerPrice": null,
       "shipping": "+ Shipping Extra",
       "inStock": true,
@@ -32,5 +32,5 @@
       "visible": true
     }
   ],
-  "updated": "2026-11-26T05:33:34.811Z"
+  "updated": "2026-11-26T05:36:47.186Z"
 }

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /prices.json
+
+Sitemap: https://neyranaturals.vercel.app/sitemap.xml
